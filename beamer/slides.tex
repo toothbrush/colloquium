@@ -1,4 +1,19 @@
 \documentclass[]{beamer}
+\usetheme{Warsaw}
+% kill another warning:
+\usepackage{textcomp}
+\usepackage{verbatim}
+\usepackage{graphicx}
+\usepackage{latexsym}
+\usepackage{amsfonts}
+\usepackage{tikz}
+\usepackage{dsfont}
+\usepackage{listings}
+
+% get rid of LaTeX-beamer warning:
+\let\Tiny=\tiny
+% hm a bit ugly but ok:
+\usepackage[T1]{fontenc}
 
 \author{Paul van der Walt}
 \institute{Utrecht University}
@@ -6,6 +21,28 @@
 \title{Binders Unbound}
 \begin{document}
 
-\maketitle
+\begin{frame}
+    \maketitle
+\end{frame}
 
+
+%% OUTLINE:
+% intro / problem statement
+% solution: unbound DSL
+% 
+
+
+
+
+
+\begin{frame}
+    hello\cite{weirich2011binders}
+\end{frame}
+
+
+\begin{frame}
+    \bibliography{bu}{} %2nd parm is width
+    \bibliographystyle{plain}
+    
+\end{frame}
 \end{document}

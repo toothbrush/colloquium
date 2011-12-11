@@ -4,8 +4,9 @@
 %include beamerboxed.fmt
 %include greek.fmt
 %include specific.fmt
-
-\usetheme{Warsaw}
+\newcommand{\nt}[1]{\note{\ensuremath{\circ} ~ ~ ~#1 \\ }}
+\usetheme{Antibes}
+\usecolortheme{whale}
 % kill another warning:
 \usepackage{textcomp}
 \usepackage{verbatim}
@@ -17,6 +18,7 @@
 \usepackage{listings}
 \usepackage{xspace}
 
+\setcounter{tocdepth}{1}
 % get rid of LaTeX-beamer warning:
 \let\Tiny=\tiny
 % hm a bit ugly but ok:
@@ -55,6 +57,7 @@
     \tableofcontents
 \end{frame}
 
+\section{Introduction and Problem}
 \begin{frame}{Problem}
     \begin{itemize}
         \item $\alpha$-equivalence and capture-avoiding substitution are conceptually simple
@@ -63,6 +66,8 @@
         \item Maintenance hassle
     \end{itemize}
 \end{frame}
+
+\section{Solution}
 
 \begin{frame}{Solution}
     \begin{itemize}
@@ -87,6 +92,7 @@
     \end{itemize}
 \end{frame}
 
+\section{Introducing \unbound}
 \begin{frame}{Concrete example}
     Representation of untyped lambda calculus
     \begin{example}
@@ -99,6 +105,7 @@
         \item \emph{Name} represents variables, indexed by type % type here means expr / variable etc
         \item \emph{Bind} represents a name paired with an expression (in which the name is bound)
     \end{itemize}
+    \nt{\unbound introduces type combinators which encode binding structure in the algebraic datatype itself}
     %TODO explain role of Name / Bind
 \end{frame}
 
@@ -141,10 +148,41 @@ red (App e1 e2) = do
 
 \end{frame}
 
+\begin{frame}{The \unbound type combinators}
+    $T \in \mathds{T}$
+    \begin{description}
+        \item[Name T] Names for Ts
+        \item[R] Regular datatype containing only terms
+        \item[Bind P T] Bind pattern P in body T
+    \end{description}
+    $P \in \mathds{P}$
+    \begin{description}
+        \item[Name T] Single binding name
+        \item[$R_P$] Regular datatype containing only patterns
+        \item[Embed T] Embedded term (to be discussed)
+        \item[Rebind P P] Nested binding pattern
+        \item[Rec P] Recursive binding pattern
+    \end{description}
+\end{frame}
 
+\section{Feature: Binding patterns}
 \begin{frame}
     hello\cite{weirich2011binders}
 \end{frame}
+
+\section{Semantics}
+
+\section{Theorems}
+
+
+\section{Implementation}
+
+
+\section{Discussion}
+\section{Related work}
+\section{Conclusion} % AND contribution
+
+
 
 
 \begin{frame}

@@ -4,13 +4,15 @@ NOTES_FILE=notes.$(TEX_FILE)
 SLIDE_FILE=slide.$(TEX_FILE)
 GENERATED=$(TEX_FILE) $(NOTES_FILE:.tex=.pdf) $(SLIDE_FILE:.tex=.pdf) $(NOTES_FILE) $(SLIDE_FILE)
 
+default: all
+
 all: slides notes
 
-slides: $(TEX_FILE)
+slides: $(TEX_FILE) slides.header
 	cat slides.header $(TEX_FILE) > $(SLIDE_FILE)
 	rubber --pdf $(SLIDE_FILE)
 
-notes: $(TEX_FILE)
+notes: $(TEX_FILE) notes.header
 	cat notes.header $(TEX_FILE) > $(NOTES_FILE)
 	rubber --pdf $(NOTES_FILE)
 
@@ -28,4 +30,4 @@ clean:
 	-rm -f *.toc *.aux *.snm *.blg *.bbl *.nav *.out *.ptb *.log
 	-rm -f $(GENERATED)
 
-.PHONY: pdfshow $(TEX_FILE) clean
+.PHONY: pdfshow clean

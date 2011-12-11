@@ -18,20 +18,57 @@
 \author{Paul van der Walt}
 \institute{Utrecht University}
 \date{15th December 2012}
-\title{Binders Unbound}
+\title[Binders Unbound]{Binders Unbound\\\small{by Weirich, Yorgey and Sheard}}
 \begin{document}
 
 \begin{frame}
     \maketitle
 \end{frame}
 
+%TODO: question-> talk about process of refining eg let* or just give final definition?
 
 %% OUTLINE:
 % intro / problem statement
 % solution: unbound DSL
-% 
+% introducing unbound
+% feature: binding patterns
+% semantics
+% theorems
+% implementation
 
+% discussion
 
+% related work
+% (discussion?)
+% conclusion / summary / contribution
+
+\begin{frame}
+    \tableofcontents
+\end{frame}
+
+\begin{frame}{Problem}
+    \begin{itemize}
+        \item $\alpha$-equivalence and capture-avoiding substitution are conceptually simple
+        \item Implementation is a pain
+        \item Subtle, boring \emph{boilerplate} code, prone to errors
+        \item Maintenance hassle
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Solution}
+    \begin{itemize}
+        \item Enter Unbound
+        \item Out-of-the-box support for these problematic operations
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Concrete example}
+    \begin{example}
+        \begin{spec}
+            test = undefined
+        \end{spec}
+    \end{example}
+\end{frame}
 
 
 

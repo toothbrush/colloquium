@@ -282,7 +282,7 @@ data E  =   ...
         | fv (bind p t) = fvP p `union` (fv t - binders p) |
     \end{block}
 \end{frame}
-
+%TODO understand these and be able to explain them.
 \begin{frame}
     \begin{block}{Theorem 9}
         If $\left\{ x \right\} \cup $ |fv t| is disjoint from |binders p|,\\

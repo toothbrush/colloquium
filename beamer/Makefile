@@ -24,6 +24,7 @@ pdfshow: notes
 	if [ -x /usr/bin/open ] ; then open $(NOTES_FILE:.tex=.pdf); fi
 
 clean:
+	# never randomly delete .tex or .pdf files, specify them separately.
 	-rm -f *.toc *.aux *.snm *.blg *.bbl *.nav *.out *.ptb *.log
 	-rm -f $(GENERATED)
 

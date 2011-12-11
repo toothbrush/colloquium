@@ -1,4 +1,7 @@
 %include lhs2TeX.fmt
+%include polycode.fmt
+%include beamer.fmt
+%include beamerboxed.fmt
 %include greek.fmt
 \usetheme{Warsaw}
 % kill another warning:
@@ -10,11 +13,14 @@
 \usepackage{tikz}
 \usepackage{dsfont}
 \usepackage{listings}
+\usepackage{xspace}
 
 % get rid of LaTeX-beamer warning:
 \let\Tiny=\tiny
 % hm a bit ugly but ok:
 \usepackage[T1]{fontenc}
+
+\newcommand\unbound{Unbound\xspace}
 
 \author{Paul van der Walt}
 \institute{Utrecht University}
@@ -58,16 +64,34 @@
 
 \begin{frame}{Solution}
     \begin{itemize}
-        \item Enter Unbound
+        \item Enter \unbound
         \item Out-of-the-box support for these problematic operations
+        \item But, such tools already exist? (SYN\footnote{Scrap Your Nameplate, Cheney}, C$\alpha$ml\footnote{Pottier}, \ldots)
+        \item These fall short
+            \begin{itemize}
+                \item Expressiveness %TODO: rehash §1 here
+                \item Availability
+                \item Choice of implementation
+            \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{\unbound contribution}
+    \begin{itemize}
+        \item Compositional abstract combinators, small set
+        \item Very expressive (examples to follow; supporting \ldots) %TODO enumerate supported things
+        \item Formal semantics and correctness proof
+        \item Haskell library for portability
     \end{itemize}
 \end{frame}
 
 \begin{frame}{Concrete example}
+    Representation of untyped lambda calculus
     \begin{example}
-        \begin{spec}
-            test = undefined
-        \end{spec}
+> type N   = Name E
+> data E   = Var N
+>          | Lam (Bind N E)
+>          | App E E
     \end{example}
 \end{frame}
 

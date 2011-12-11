@@ -30,4 +30,4 @@ clean:
 	-rm -f *.toc *.aux *.snm *.blg *.bbl *.nav *.out *.ptb *.log
 	-rm -f $(GENERATED)
 
-.PHONY: pdfshow clean
+.PHONY: pdfshow clean $(TEX_FILE)

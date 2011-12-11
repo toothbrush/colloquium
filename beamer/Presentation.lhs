@@ -238,6 +238,57 @@ data E  =   ...
 
 \section{Theorems}
 
+\begin{frame}
+    \begin{itemize}
+        \item After defining semantics, it's good to prove they make sense
+        \item Most proofs are rather straight forwards, here only a summary will be given
+        \item Extension of single-binder case locally nameless representations
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Local closure (LC)}
+    \begin{itemize}
+        \item Not all terms are good representations
+        \item Only locally closed terms and patterns can be constructed
+        \item i.e. no dangling bound variables (@0@@0@)
+        \item Theorem: constructors and destructors preserve LC
+        \item Theorem: Substitution preserves LC
+        \item Theorem: Freshening preserves LC
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{$\alpha$-equivalence}
+    \begin{itemize}
+        \item Theorem: $-\approx-$ is an equivalence (refl, sym, trans)
+        \item Theorem: |fv| respects $\alpha$-equivalence ($t_1\approx t_2 \Rightarrow fv t_1 \approx fv t_2$)
+        \item Theorem: Substitution respects $\alpha$-equivalence
+    \end{itemize}
+    
+\end{frame}
+
+
+\begin{frame}{Interaction $\alpha$-equivalence with |bind|}
+    Two bindings are $\alpha$-equivalent if we can freshen two patterns to the same new result, and then show that their bodies are $\alpha$-equivalent under a consistent renaming. %TODO this -> \nt?
+    \begin{block}{Theorem 7}
+        If |freshen p1 -> p, pi1| and |freshen p2 -> p, pi2|\\ and $\pi_1 \cdot t_1 \approx \pi_2 \cdot t_2$\\ then |bind p1 t1| $\approx$ |bind p2 t2|.
+    \end{block}
+    \nt{Here pi are permutations returned by freshen, and $\pi \cdot t$ is the application of a permutation to a term. }
+    
+\end{frame}
+
+
+\begin{frame}
+    \begin{block}{Theorem 8}
+        | fv (bind p t) = fvP p `union` (fv t - binders p) |
+    \end{block}
+\end{frame}
+
+\begin{frame}
+    \begin{block}{Theorem 9}
+        If $\left\{ x \right\} \cup $ |fv t| is disjoint from |binders p|,\\
+        then |subst x t (bind p t') = bind (substP x t p) (subst x t t')|
+    \end{block}
+\end{frame}
 
 \section{Implementation}
 

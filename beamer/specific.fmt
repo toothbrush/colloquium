@@ -2,6 +2,10 @@
 %format e2   = "\ensuremath{e_2}"
 %format e1'  = "\ensuremath{e_1'}"
 %format e2'  = "\ensuremath{e_2'}"
+%format N1  = "\ensuremath{N_1}"
+%format N2  = "\ensuremath{N_2}"
+%format E1  = "\ensuremath{E_1}"
+%format E2  = "\ensuremath{E_2}"
 
 %format Bind    = "\comb{Bind}"
 %format Embed   = "\comb{Embed}"

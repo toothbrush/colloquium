@@ -192,8 +192,37 @@ data    E       =   ...
         data E  =   ...
                 |   Let (Bind [(N, Embed E)] E)
     \end{spec}
+    \begin{itemize}
+        \item |Embed| may only occur in pattern types
+        \item Used for embedding terms which don't bind any names
+        \nt{a term type within |Embed| may contain pattern types (lhs of |Bind|), which may again contain
+        |Embed|ded types.}
+    \end{itemize}
 \end{frame}
 
+\begin{frame}{Improvement: Nested binding using |Rebind|}
+    Introducing the nested |let*|: \\
+    |let* x1 = e1, ..., xn = en in e|
+    \begin{spec}
+type    N1  =   Name E
+type    N2  =   Name E
+Bind (Rebind N1 (N2, Embed E1)) E2
+    \end{spec}
+    \nt{|Rebind P1 P2| acts like the pattern type |(P1,P2)|, except that |P1| also scopes over |P2|}%
+    \nt{Here, |N1| and |N2| are bound in |E2|, and additionally |N1| is also bound in |E1|.}%
+    Generalises to:
+    \begin{spec}
+data Lets   =   Nil
+            |   Cons (Rebind (N, Embed E) Lets)
+data E      =   ...
+            |   LetStar (Bind Lets E)
+    \end{spec}
+\end{frame}
+\begin{frame}
+    \begin{itemize}
+        \item Allows support for \emph{telescopes}\footnote{A telescope $\Lambda$ is a sequence of variables with types: $x_1 : A_1, \ldots, x_n : A_n$.}
+    \end{itemize}
+\end{frame}
 \begin{frame}
     hello
 \end{frame}

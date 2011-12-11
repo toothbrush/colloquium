@@ -7,6 +7,7 @@
 \newcommand{\nt}[1]{\note{\ensuremath{\circ} ~ ~ ~#1 \\ }}
 \usetheme{Antibes}
 \usecolortheme{whale}
+\usefonttheme{structuresmallcapsserif}
 % kill another warning:
 \usepackage{textcomp}
 \usepackage{verbatim}
@@ -24,7 +25,7 @@
 % hm a bit ugly but ok:
 \usepackage[T1]{fontenc}
 
-\newcommand\unbound{Unbound\xspace}
+\newcommand\unbound{{\rmfamily\scshape Unbound}\xspace}
 
 \author{Paul van der Walt}
 \institute{Utrecht University}

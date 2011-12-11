@@ -218,16 +218,23 @@ data E      =   ...
             |   LetStar (Bind Lets E)
     \end{spec}
 \end{frame}
-\begin{frame}
+\begin{frame}{This is cool because\ldots}
     \begin{itemize}
-        \item Allows support for \emph{telescopes}\footnote{A telescope $\Lambda$ is a sequence of variables with types: $x_1 : A_1, \ldots, x_n : A_n$.}
+        \item |Rebind| allows support for \emph{telescopes}\footnote{A telescope $\Lambda$ is a sequence of variables with types: $x_1 : A_1, \ldots, x_n : A_n$.}
+        \item Allows encoding of dependently typed systems, and\ldots
+        \item provides machinery for working with telescopes, such as calculation of binding variables, multiple substitution in terms, substitution through telescopes.
+        \item What about |letrec|?
+        \item Enter |Rec|, ``recursive'' version of |Rebind| \nt{given |Rec P|, names in the pattern P scope over all other terms embedded in P, and since |Rec P| is also a pattern, names in P also scope over anythings that binds |Rec P|.}
     \end{itemize}
-\end{frame}
-\begin{frame}
-    hello
+    \begin{spec}
+data E  =   ...
+        |   Letrec (Bind (Rec [(N, Embed E)]) E)
+    \end{spec}
 \end{frame}
 
 \section{Semantics}
+
+%TODO: summarise semantics
 
 \section{Theorems}
 

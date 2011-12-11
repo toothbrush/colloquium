@@ -1,0 +1,4 @@
+%format e1 "\ensuremath{e_1}"
+%format e2 "\ensuremath{e_2}"
+%format e1' "\ensuremath{e_1'}"
+%format e2' "\ensuremath{e_2'}"

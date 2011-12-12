@@ -99,6 +99,7 @@
         \item |Name| represents variables, indexed by type % type here means expr / variable etc
         \item |Bind| represents a name paired with an expression (in which the name is bound)
     \end{itemize}
+    \nt{Using concrete examples we'll motivate the available combinators}
     \nt{\unbound introduces type combinators which encode binding structure in the algebraic datatype itself}
     %TODO explain role of Name / Bind
 \end{frame}
@@ -197,6 +198,7 @@ data    E       =   ...
         \item Used for embedding terms which don't bind any names
         \nt{a term type within |Embed| may contain pattern types (lhs of |Bind|), which may again contain
         |Embed|ded types.}
+        \nt{Note that we have a list of pairs, this is to prevent nonsensical (mismatched) lengths}
     \end{itemize}
 \end{frame}
 
@@ -210,6 +212,7 @@ Bind (Rebind N1 (N2, Embed E1)) E2
     \end{spec}
     \nt{|Rebind P1 P2| acts like the pattern type |(P1,P2)|, except that |P1| also scopes over |P2|}%
     \nt{Here, |N1| and |N2| are bound in |E2|, and additionally |N1| is also bound in |E1|.}%
+    \pause
     Generalises to:
     \begin{spec}
 data Lets   =   Nil
@@ -230,6 +233,7 @@ data E      =   ...
 data E  =   ...
         |   Letrec (Bind (Rec [(N, Embed E)]) E)
     \end{spec}
+    \nt{Can't be done with |Rebind| since this only gives a telescope. Thus the motivation for a new combinator.}
 \end{frame}
 
 \section{Semantics}
@@ -240,9 +244,9 @@ data E  =   ...
 
 \begin{frame}
     \begin{itemize}
-        \item After defining semantics, it's good to prove they make sense
-        \item Most proofs are rather straight forwards, here only a summary will be given
-        \item Extension of single-binder case locally nameless representations
+        \item It's good to prove the semantics make sense
+        \item Most proofs are rather straight forward, here only a summary will be given\footnote{In the paper most proofs are left out too.}
+        \item Extension of single-binder case locally nameless representations\cite{aydemir2010lngen,aydemir2008engineering}
     \end{itemize}
 \end{frame}
 

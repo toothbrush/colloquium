@@ -1,4 +1,7 @@
 %format e1   = "\ensuremath{e_1}"
+%format x1   = "\ensuremath{x_1}"
+%format en   = "\ensuremath{e_n}"
+%format xn   = "\ensuremath{x_n}"
 %format e2   = "\ensuremath{e_2}"
 %format e1'  = "\ensuremath{e_1'}"
 %format e2'  = "\ensuremath{e_2'}"

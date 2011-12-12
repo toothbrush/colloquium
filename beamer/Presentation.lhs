@@ -69,17 +69,21 @@
         \item But, such tools already exist? (SYN\footnote{Scrap Your Nameplate, Cheney}, C$\alpha$ml\footnote{Pottier}, \ldots)
         \item These fall short
             \begin{itemize}
-                \item Expressiveness %TODO: rehash §1 here
+                \item Expressiveness
                 \item Availability
                 \item Choice of implementation
             \end{itemize}
     \end{itemize}
+
+    \nt{certain binding patterns we'd like to specify can't be specified}
+    \nt{availability: writing in your own language is preferable, but often this means having to update the tool each time the language changes. }
+    \nt{swapping out (or writing own) implementations of binding specifications should be possible}
 \end{frame}
 
 \begin{frame}{\unbound contribution}
     \begin{itemize}
         \item Compositional abstract combinators, small set
-        \item Very expressive (examples to follow; supporting \ldots) %TODO enumerate supported things
+        \item Very expressive (examples to follow)\nt{supports many things like multiple atom types, pattern binders, recursive/nested binders \ldots}
         \item Formal semantics and correctness proof
         \item Haskell library for portability
     \end{itemize}
@@ -101,6 +105,7 @@
     \end{itemize}
     \nt{Using concrete examples we'll motivate the available combinators}
     \nt{\unbound introduces type combinators which encode binding structure in the algebraic datatype itself}
+    \nt{won't talk much about implementation and formal semantics of \unbound, more a tutorial}
     %TODO explain role of Name / Bind
 \end{frame}
 
@@ -240,7 +245,50 @@ data E  =   ...
 
 %TODO: summarise semantics
 
+\begin{frame}
+    \begin{itemize}
+        \item We've seen examples motivating the semantics
+        \item \ldots but no formal definition
+        \item Will be vague here, focusing on the how-to
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Representation}
+    \begin{itemize}
+        \item Locally nameless
+        \item Old idea
+        \item Bound variables represented by de Bruijn indices
+        \item Free variables by atoms \nt{ atoms can be any countably infinite set with decidable equality, not just strings}
+        \item $\alpha$-equivalence $\Leftrightarrow$ structural equality!
+    \end{itemize}
+\end{frame}
+
+\newcommand{\iss}{&::=&}
+\begin{frame}{Syntax}
+    \begin{eqnarray}
+        \mathds{A} \iss \left\{ \textnormal{x,y,z},\cdots \right\}  \\
+        b \iss j@@k  \\
+        t \iss \textnormal{x}\; ||\; b\; ||\; \textnormal{K}~t_1 \ldots t_n\; ||\; \textnormal{Bind}~p~t  \\
+        p \iss -_x\; ||\; \textnormal{K}~p_1 \ldots p_n  \; ||\; \textnormal{Rebind}~p~p\; ||\; \textnormal{Embed}~t \;||\; \textnormal{Rec}~p  \\
+    \end{eqnarray}
+    %TODO: explain this like top of pg 5 (red)
+\end{frame}
+
+\begin{frame}{Names, indices, patterns}
+    \begin{itemize}
+        \item How to interpret |j@k|?
+        \item |j| references a pattern
+        \item |k| references a binder
+    \end{itemize}
+    \begin{example}
+        |Bind (bx, by, bz) (Bind bq 1@2)|
+    \end{example}\nt{so |1@2| refers to |bq| since we count from 0}
+    \nt{|nth| and |find| exist for looking up name resp. index given pattern and number resp name.}
+\end{frame}
 \section{Theorems}
+
+%TODO open/close; unbind / bind are basically open / close with some freshening.
+%TODO constructing terms and patterns
 
 \begin{frame}
     \begin{itemize}
@@ -251,7 +299,7 @@ data E  =   ...
 \end{frame}
 
 \begin{frame}{Local closure (LC)}
-    \begin{itemize}
+    \begin{itemize}%TODO what is LC?
         \item Not all terms are good representations
         \item Only locally closed terms and patterns can be constructed
         \item i.e. no dangling bound variables (@0@@0@)
@@ -294,12 +342,13 @@ data E  =   ...
     \end{block}
 \end{frame}
 
-\section{Implementation}
+\section{Implementation} % TODO very little here
 
+%TODO: Demo?
 
 \section{Discussion}
-\section{Related work}
-\section{Conclusion} % AND contribution
+\section{Related work} % TODO very brief
+\section{Conclusion} % / contribution
 
 
 

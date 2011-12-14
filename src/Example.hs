@@ -28,10 +28,8 @@ data Lit    = Int Prelude.Integer
             deriving (Show, Eq)
 
 $(derive [''Lit])
-instance Alpha Lit
 
-instance P.Pretty Exp where
---    pretty (Lit x) = P.text "eyeahd"
+instance Alpha Lit
 
 $(derive [''Exp])
 
@@ -54,8 +52,6 @@ toExp (E.Var (E.UnQual (E.Ident s)))      = Var (s2n s)
 toExp (E.Lambda _ [E.PVar (E.Ident s)] e) = Lam (bind (s2n s) (toExp e))
 {-toExp (E.Let (E.BDecls [E.PatBind _ (E.PVar (E.Ident s)) Nothing (E.UnGuardedRhs e1) (E.BDecls [])]) e2)-}
                                           {-= let_ (s2n s) (toExp e1) (toExp e2)-}
-{-toExp (E.App ((E.Var (E.UnQual (E.Ident "fix")))) e)-}
-                                          {-= fix_ (toExp e)-}
 toExp (E.App e1 e2)                       = App (toExp e1) (toExp e2)
 toExp (E.Paren e)                         = toExp e
 toExp e                                   = error $ "toExp: Unsupported: " ++ show e
@@ -63,9 +59,9 @@ toExp e                                   = error $ "toExp: Unsupported: " ++ sh
 parseExp = toExp . E.fromParseResult . E.parseExp
 
 example0 = parseExp "\\ x -> \\ y -> x"
-example01= parseExp "\\ x -> \\ y -> y"
 example1 = parseExp "\\ x -> x"
 example2 = parseExp "(\\x -> x) y"
+example3 = parseExp "\\ x -> y"
 
 red :: Fresh m => Exp -> m Exp
 red (Var x) = return (Var x)
@@ -90,20 +86,14 @@ red (App e1 e2) = do
 fromLit (Int i)     = E.Int i
 fromLit (Char c)    = E.Char c
 fromLit (String s)  = E.String s
-
-unbindLam = unbind
-noSrcLoc = E.SrcLoc "" 0 0
-
+{-
 fromExp :: (Fresh m) => Exp -> m String
 fromExp (Lit i)     = return (show i)
 fromExp (Var n)     = return (name2String n)
-fromExp (Lam b)     = do (n,e) <- unbindLam b
-                         return (show (Lam (bind n e)))
+fromExp (Lam b)     = do (n,e) <- unbind
+                         (e', perm) <- freshen e
+                         return (show (Lam (bind n e')))
 fromExp (App e1 e2) = do e1' <- fromExp e1
                          e2' <- fromExp e2
                          return $ show $ App e1 e2
-
-
-{-prettyOneLine =-}
-  {-E.prettyPrintStyleMode (E.style { E.mode = E.OneLineMode }) E.defaultMode-}
-{-prettyExp = prettyOneLine . runFreshM . fromExp-}
+                         -}

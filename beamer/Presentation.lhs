@@ -18,7 +18,7 @@
 \usepackage{dsfont}
 \usepackage{listings}
 \usepackage{xspace}
-
+\newcommand{\ppause}{\pause \vspace{-3em}}
 %colouring:
 \definecolor{MyDarkGreen}{rgb}{0,0.5,0.45}
 \newcommand{\comb}[1]{{\color{blue}\mathsf{#1}}}
@@ -260,14 +260,14 @@ data E  =   ...
     \end{itemize}
 \end{frame}
 
-\newcommand{\iss}{&::=&}
+\newcommand{\iss}{ ::=& }
 \begin{frame}{Syntax}
-    \begin{eqnarray}
+    \begin{align*}
         \mathds{A} \iss \left\{ \textnormal{x,y,z},\cdots \right\}  \\
-        b \iss j@@k  \\
-        t \iss \textnormal{x}\; ||\; b\; ||\; \textnormal{K}~t_1 \ldots t_n\; ||\; \textnormal{Bind}~p~t  \\
-        p \iss -_x\; ||\; \textnormal{K}~p_1 \ldots p_n  \; ||\; \textnormal{Rebind}~p~p\; ||\; \textnormal{Embed}~t \;||\; \textnormal{Rec}~p  \\
-    \end{eqnarray}
+        b \iss\; j@@k  \\
+        t \iss\; \textnormal{x}\; ||\; b\; ||\; \textnormal{K}~t_1 \ldots t_n\; ||\; \textnormal{Bind}~p~t  \\
+        p \iss\; -_x\; ||\; \textnormal{K}~p_1 \ldots p_n  \; ||\; \textnormal{Rebind}~p~p\; ||\; \textnormal{Embed}~t \;||\; \textnormal{Rec}~p
+    \end{align*}
     %TODO: explain this like top of pg 5 (red)
 \end{frame}
 
@@ -282,12 +282,50 @@ data E  =   ...
     \end{example}\nt{so |1@2| refers to |bq| since we count from 0}
     \nt{|nth| and |find| exist for looking up name resp. index given pattern and number resp name.}
 \end{frame}
+
+
+\begin{frame}{Open and close}
+    \begin{itemize}
+        \item |bind| and |unbind| are implemented in terms of:
+            \pause
+        \item |close| and |open|, important operations
+    \end{itemize}
+    \begin{block}{Helpers}
+        \begin{spec}
+            nth     ::  P -> dsN -> Maybe dsA
+            find    ::  P -> dsA -> Maybe dsN
+        \end{spec}
+    \end{block}
+    \nt{|close| replaces free variables which match a pattern-bound variable, with bound variables at the given level}
+    \nt{|open| does the opposite, replaces bound variables (of the form |j@k|) with references to their binders in a the pattern}
+    \nt{|open| allows recursing under a binder}
+    \nt{|nth| and |find| are useful for converting between numeric indices and names}
+\end{frame}
+\begin{frame}{Binding and unbinding}
+\begin{itemize}
+    \item Nothing special for binding
+    \item Unbinding requires freshening
+\end{itemize}
+\begin{block}{Defs}
+    \begin{spec}
+bind      p t          = Bind p (close p t)
+unbind    (Bind p t)   = (p', open p' t)
+    where p' = freshen p
+\end{spec}\nt{|freshen| is trivial; walks over structure and assigns fresh variable names, stopping at |Embed|}
+\nt{since |Embed|s are not part of the pattern.}
+\ppause
+\begin{spec}
+unrebind    (Rebind p1 p2)  =   (p1, openP p1 p2)
+unrec       (Rec p)         =   openP p p
+\end{spec}\nt{note that we mustn't re-freshen rebound things. why?}
+\nt{when opening a bind, we must freshen it's variables}
+\nt{but when opening a nested binding, fresh names have already been chosen, and some correspondence may exist between the outer bind and the variables inside the Rebind. this mustn't be broken. } %TODO: example.
+%TODO: talk about open/openP
+\end{block}
+\end{frame}
+
 \section{Theorems}
-
-%TODO open/close; unbind / bind are basically open / close with some freshening.
-%TODO constructing terms and patterns
-
-\begin{frame}
+\begin{frame}{Metatheory}
     \begin{itemize}
         \item It's good to prove the semantics make sense
         \item Most proofs are rather straight forward, here only a summary will be given\footnote{In the paper most proofs are left out too.}
@@ -296,7 +334,7 @@ data E  =   ...
 \end{frame}
 
 \begin{frame}{Local closure (LC)}
-    \begin{itemize}%TODO what is LC?
+    \begin{itemize}%TODO what is LC? define. 
         \item Not all terms are good representations
         \item Only locally closed terms and patterns can be constructed
         \item i.e. no dangling bound variables (@0@@0@)
@@ -330,21 +368,17 @@ data E  =   ...
     \begin{block}{Theorem 8}
         | fv (bind p t) = fvP p `union` (fv t - binders p) |
     \end{block}
-\end{frame}
-%TODO understand these and be able to explain them.
-\begin{frame}
+    \pause
     \begin{block}{Theorem 9}
         If $\left\{ x \right\} \cup $ |fv t| is disjoint from |binders p|,\\
         then |subst x t (bind p t') = bind (substP x t p) (subst x t t')|
     \end{block}
 \end{frame}
 
-\section{Implementation} % TODO very little here
+\section{Implementation} % TODO very little here / DEMO
 
-%TODO: Demo?
 
-\section{Discussion}
-\section{Related work} % TODO very brief
+\section{Discussion} % / related work -- very brief!
 \section{Conclusion} % / contribution
 
 

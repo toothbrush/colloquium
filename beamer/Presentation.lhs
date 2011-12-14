@@ -2,7 +2,6 @@
 %include polycode.fmt
 %include beamer.fmt
 %include beamerboxed.fmt
-%include greek.fmt
 %include specific.fmt
 \newcommand{\nt}[1]{\note{\ensuremath{\circ} ~ ~ ~#1 \\ }}
 \usetheme{Antibes}
@@ -51,6 +50,8 @@
 \begin{frame}{Problem}
     \begin{itemize}
         \item $\alpha$-equivalence and capture-avoiding substitution are conceptually simple
+            \pause
+            \nt{what is $\alpha$-equivalence? capture-avoiding substitution?}
         \item Implementation is a pain
         \item Subtle, boring \emph{boilerplate} code, prone to errors
         \item Maintenance hassle
@@ -77,15 +78,6 @@
     \nt{swapping out (or writing own) implementations of binding specifications should be possible}
 \end{frame}
 
-\begin{frame}{\unbound contribution}
-    \begin{itemize}
-        \item Compositional abstract combinators, small set
-        \item Very expressive (examples to follow)\nt{supports many things like multiple atom types, pattern binders, recursive/nested binders \ldots}
-        \item Formal semantics and correctness proof
-        \item Haskell library for portability
-    \end{itemize}
-\end{frame}
-
 \section{Introducing \unbound}
 \begin{frame}{Concrete example}
     Representation of untyped lambda calculus
@@ -105,6 +97,15 @@
     \nt{won't talk much about implementation and formal semantics of \unbound, more a tutorial}
     %TODO explain role of Name / Bind
 \end{frame}
+\begin{frame}{\unbound contribution}
+    \begin{itemize}
+        \item Compositional abstract combinators, small set
+        \item Very expressive (examples to follow)\nt{supports many things like multiple atom types, pattern binders, recursive/nested binders \ldots}
+        \item Formal semantics and correctness proof
+        \item Haskell library for portability
+    \end{itemize}
+\end{frame}
+
 
 \begin{frame}
 From this, \unbound derives
@@ -113,7 +114,7 @@ From this, \unbound derives
         \item free variable calculation
         \item capture-avoiding substitution
         \item \ldots
-    \end{itemize}
+    \end{itemize}\nt{through Template Haskell and generic techniques}
 \end{frame}
 
 \begin{frame}{Parallel reduction: apply $\beta$- and $\eta$-reduction}
@@ -226,9 +227,11 @@ data E      =   ...
 \begin{frame}{This is cool because\ldots}
     \begin{itemize}
         \item |Rebind| allows support for \emph{telescopes}\footnote{A telescope $\Lambda$ is a sequence of variables with types: $x_1 : A_1, \ldots, x_n : A_n$.}
-        \item Allows encoding of dependently typed systems, and\ldots
-        \item provides machinery for working with telescopes, such as calculation of binding variables, multiple substitution in terms, substitution through telescopes.
+            \pause
+        \item Allows encoding of dependently typed systems, for example
+        \item Provides machinery for working with telescopes, such as calculation of binding variables, multiple substitution in terms, substitution through telescopes
         \item What about |letrec|?
+            \pause
         \item Enter |Rec|, ``recursive'' version of |Rebind| \nt{given |Rec P|, names in the pattern P scope over all other terms embedded in P, and since |Rec P| is also a pattern, names in P also scope over anythings that binds |Rec P|.}
     \end{itemize}
     \begin{spec}
@@ -242,7 +245,7 @@ data E  =   ...
 
 %TODO: summarise semantics
 
-\begin{frame}
+\begin{frame}{Semantics}
     \begin{itemize}
         \item We've seen examples motivating the semantics
         \item \ldots but no formal definition
@@ -256,11 +259,24 @@ data E  =   ...
         \item Old idea
         \item Bound variables represented by de Bruijn indices
         \item Free variables by atoms \nt{ atoms can be any countably infinite set with decidable equality, not just strings}
-        \item $\alpha$-equivalence $\Leftrightarrow$ structural equality!
     \end{itemize}
 \end{frame}
 
+\begin{frame}{Names, indices, patterns}
+    \begin{itemize}
+        \item How to interpret |j@k|?
+        \item |j| references a pattern
+        \item |k| references a binder
+        \item $\alpha$-equivalence $\Leftrightarrow$ structural equality!
+    \end{itemize}
+    \begin{example}
+        |Bind (bx, by, bz) (Bind bq 1@2)|
+    \end{example}\nt{so |1@2| refers to |bq| since we count from 0}
+    \nt{|nth| and |find| exist for looking up name resp. index given pattern and number resp name.}
+\end{frame}
+
 \newcommand{\iss}{ ::=& }
+
 \begin{frame}{Syntax}
     \begin{align*}
         \mathds{A} \iss \left\{ \textnormal{x,y,z},\cdots \right\}  \\
@@ -271,17 +287,6 @@ data E  =   ...
     %TODO: explain this like top of pg 5 (red)
 \end{frame}
 
-\begin{frame}{Names, indices, patterns}
-    \begin{itemize}
-        \item How to interpret |j@k|?
-        \item |j| references a pattern
-        \item |k| references a binder
-    \end{itemize}
-    \begin{example}
-        |Bind (bx, by, bz) (Bind bq 1@2)|
-    \end{example}\nt{so |1@2| refers to |bq| since we count from 0}
-    \nt{|nth| and |find| exist for looking up name resp. index given pattern and number resp name.}
-\end{frame}
 
 
 \begin{frame}{Open and close}
@@ -329,16 +334,17 @@ unrec       (Rec p)         =   openP p p
     \begin{itemize}
         \item It's good to prove the semantics make sense
         \item Most proofs are rather straight forward, here only a summary will be given\footnote{In the paper most proofs are left out too.}
-        \item Extension of single-binder case locally nameless representations\cite{aydemir2010lngen,aydemir2008engineering}
+        \item Extension of single-binder case locally nameless representations
     \end{itemize}
 \end{frame}
 
 \begin{frame}{Local closure (LC)}
-    \begin{itemize}%TODO what is LC? define. 
+    \begin{itemize}
         \item Not all terms are good representations
-        \item Only locally closed terms and patterns can be constructed
+        \item Only \alert{locally closed} terms and patterns can be constructed
+            \pause
         \item i.e. no dangling bound variables (@0@@0@)
-        \item Theorem: constructors and destructors preserve LC
+        \item Theorem: Constructors and destructors preserve LC
         \item Theorem: Substitution preserves LC
         \item Theorem: Freshening preserves LC
     \end{itemize}
@@ -346,7 +352,7 @@ unrec       (Rec p)         =   openP p p
 
 \begin{frame}{$\alpha$-equivalence}
     \begin{itemize}
-        \item Theorem: $-\approx-$ is an equivalence (refl, sym, trans)
+        \item Theorem: $-\approx-$ is an equivalence relation (\emph{refl}, \emph{sym}, \emph{trans})
         \item Theorem: |fv| respects $\alpha$-equivalence ($t_1\approx t_2 \Rightarrow fv t_1 \approx fv t_2$)
         \item Theorem: Substitution respects $\alpha$-equivalence
     \end{itemize}
@@ -377,16 +383,65 @@ unrec       (Rec p)         =   openP p p
 
 \section{Implementation} % TODO very little here / DEMO
 
+\begin{frame}{About the implementation}
+    \begin{itemize}
+        \item Some relevant classes
+        \item Alpha, Subst, Fresh
+        \item RTM
+    \end{itemize}
+    \begin{block}{Important classes}
+        \begin{spec}
+class Alpha a where
+    aeq     :: Mode -> a -> a -> Bool
+class Monad m => Fresh m where
+    fresh   :: Name a -> m (Name a)
+class Subst b a where
+    isVar   :: a -> Maybe (SubstName a b)
+\end{spec}\nt{EG: 
+    \begin{spec}
+    instance Alpha SourcePos where
+        aeq _ _ _ = True
+\end{spec}}
+\nt{mode = pattern or term, different from semantics, they're not differentiated syntactically}
+\nt{default impl @FreshM@ exists, which just gives variables a number}
+\nt{Subst example: see code}
+    \end{block}
+    \pause
+    Demo time.
+\end{frame}
+
 
 \section{Discussion} % / related work -- very brief!
+\begin{frame}{Discussion}
+    \begin{itemize}
+        \item Many approaches possible (nominal)\nt{locally nameless turns out to be simpler. nominal impl is being worked on.}
+        \item In practise \unbound is effective
+        \item Being used in {\rmfamily \sc Trellys}\nt{experimental dependently-typed language, for type checking and evaluation}
+        \item ``Just works'', but performance is an issue\nt{performance: generic functions, also in freshness monad some terms will be opened and closed for each binding level; expensive. on the other hand, $\alpha$-equiv is cheaper than nominal impl.}
+        \item Much related work, old idea (see references)
+    \end{itemize}
+\end{frame}
+\begin{frame}{Future work}
+    \begin{itemize}
+        \item Support for global bindings (modules, objects)
+        \item Any atom type (currently |String|)\nt{all that's necessary is dec. eq.}
+        \item Static distinction between names and patterns \nt{limitation of RepLib. Allows creation of nonsensical terms such as using a pattern as a term: |Embed (Embed N)|}
+        \item \unbound doesn't keep track of the scope of names once unbound \nt{names can escape their scope}
+    \end{itemize}
+\end{frame}
+
 \section{Conclusion} % / contribution
 
 
-
-
-\begin{frame}
+\begin{frame}{Conclusion}
+    \begin{itemize}
+        \item Expressive specification language
+        \item Simple and practical to use
+        \item Valuable tool for exploration of programming language design (compilers, interpreters, type checkers)
+    \end{itemize}
     \bibliography{bu}{} %2nd parm is width
     \bibliographystyle{plain}
-    
 \end{frame}
+
+
 \end{document}

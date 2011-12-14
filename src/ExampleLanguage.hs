@@ -5,13 +5,21 @@
 {-# LANGUAGE UndecidableInstances       #-}
 {-# LANGUAGE NoMonomorphismRestriction  #-}
 
-module Example where
+module ExampleLanguage where
 
 import Unbound.LocallyNameless hiding (Char, Int)
 import qualified Language.Haskell.Exts as E
 import qualified Language.Haskell.Exts.Pretty as P
 
-type N = Name Exp
+------------------------------------------------------------
+-- our example AST data type
+
+type N    = Name Exp
+
+data Lit  = Int Prelude.Integer
+          | Char Prelude.Char
+          | String Prelude.String
+          deriving (Show, Eq)
 
 data Exp  = Var N
           | Lit Lit
@@ -20,13 +28,8 @@ data Exp  = Var N
           | Op String Exp Exp
           deriving Show
 
-instance Eq Exp where
-    (==) = aeq
-
-data Lit    = Int Prelude.Integer
-            | Char Prelude.Char
-            | String Prelude.String
-            deriving (Show, Eq)
+------------------------------------------------------------
+-- All we need to be able to use Unbound library!
 
 $(derive [''Lit])
 
@@ -41,6 +44,12 @@ instance Subst Exp Lit where
 instance Subst Exp Exp where
   isvar (Var n) = Just (SubstName n)
   isvar _       = Nothing
+
+instance Eq Exp where
+    (==) = aeq
+
+------------------------------------------------------------
+-- convert from Haskell src ext AST:
 
 toLit (E.Int i)     = Int i
 toLit (E.Char c)    = Char c
@@ -59,32 +68,3 @@ toExp e                                   = error $ "toExp: Unsupported: " ++ sh
 toOperator (E.QVarOp (E.UnQual (E.Symbol s))) = s
 
 parseExp = toExp . E.fromParseResult . E.parseExp
-
-example0 = parseExp "\\ x -> \\ y -> x"
-example1 = parseExp "\\ x -> x"
-example2 = parseExp "(\\x -> x + 1) y" -- for beta
-example3 = parseExp "\\ x -> y"
-
-red :: Fresh m => Exp -> m Exp
-red (Lit l) = return (Lit l)
-red (Var x) = return (Var x)
-red (Lam b) = do
-  (x,e) <- unbind b
-  e'    <- red e
-  case e' of -- eta-rule
-      App e'' (Var y) | x == y && not (x `elem` fv e'') -> return e''
-      _                -> return (Lam (bind x e'))
-red (App e1 e2) = do
-    e1' <- red e1
-    case e1' of
-        Lam b -> do -- beta-rule
-            (x, e') <- unbind b
-            e2' <- red e2
-            return (subst x e2' e')
-        _ -> do
-            e2' <- red e2
-            return (App e1' e2')
-red (Op s e1 e2) = do
-                e1' <- red e1
-                e2' <- red e2
-                return (Op s e1' e2')

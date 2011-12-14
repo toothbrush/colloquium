@@ -17,6 +17,7 @@ data Exp  = Var N
           | Lit Lit
           | Lam (Bind N Exp)
           | App Exp Exp
+          | Op String Exp Exp
           deriving Show
 
 instance Eq Exp where
@@ -50,20 +51,22 @@ toExp :: E.Exp -> Exp
 toExp (E.Lit l)                           = Lit (toLit l)
 toExp (E.Var (E.UnQual (E.Ident s)))      = Var (s2n s)
 toExp (E.Lambda _ [E.PVar (E.Ident s)] e) = Lam (bind (s2n s) (toExp e))
-{-toExp (E.Let (E.BDecls [E.PatBind _ (E.PVar (E.Ident s)) Nothing (E.UnGuardedRhs e1) (E.BDecls [])]) e2)-}
-                                          {-= let_ (s2n s) (toExp e1) (toExp e2)-}
 toExp (E.App e1 e2)                       = App (toExp e1) (toExp e2)
 toExp (E.Paren e)                         = toExp e
+toExp (E.InfixApp e1 op e2)               = Op (toOperator op) (toExp e1) (toExp e2)
 toExp e                                   = error $ "toExp: Unsupported: " ++ show e
+
+toOperator (E.QVarOp (E.UnQual (E.Symbol s))) = s
 
 parseExp = toExp . E.fromParseResult . E.parseExp
 
 example0 = parseExp "\\ x -> \\ y -> x"
 example1 = parseExp "\\ x -> x"
-example2 = parseExp "(\\x -> x) y"
+example2 = parseExp "(\\x -> x + 1) y" -- for beta
 example3 = parseExp "\\ x -> y"
 
 red :: Fresh m => Exp -> m Exp
+red (Lit l) = return (Lit l)
 red (Var x) = return (Var x)
 red (Lam b) = do
   (x,e) <- unbind b
@@ -81,19 +84,7 @@ red (App e1 e2) = do
         _ -> do
             e2' <- red e2
             return (App e1' e2')
-
-
-fromLit (Int i)     = E.Int i
-fromLit (Char c)    = E.Char c
-fromLit (String s)  = E.String s
-{-
-fromExp :: (Fresh m) => Exp -> m String
-fromExp (Lit i)     = return (show i)
-fromExp (Var n)     = return (name2String n)
-fromExp (Lam b)     = do (n,e) <- unbind
-                         (e', perm) <- freshen e
-                         return (show (Lam (bind n e')))
-fromExp (App e1 e2) = do e1' <- fromExp e1
-                         e2' <- fromExp e2
-                         return $ show $ App e1 e2
-                         -}
+red (Op s e1 e2) = do
+                e1' <- red e1
+                e2' <- red e2
+                return (Op s e1' e2')

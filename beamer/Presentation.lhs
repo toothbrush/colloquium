@@ -88,7 +88,7 @@
 >          |    App E E
     \end{example}
     \begin{itemize}
-        \item $\comb{Library~type~combinators}$
+        \item $\comb{(library~type~combinators)}$
         \item |Name| represents variables, indexed by type % type here means expr / variable etc
         \item |Bind| represents a name paired with an expression (in which the name is bound)
     \end{itemize}
@@ -139,12 +139,12 @@ red (App e1 e2) = do
         Lam b -> do -- beta-rule
             (x, e') <- unbind b
             e2p <- red e2
-            return (subst x e2p e')
+            return (subst x e2p e') -- capture-avoiding
         _ -> do
             e2p <- red e2
             return (App e1p e2p)
   \end{spec}
-  $\libfunc{Derived~functions}$
+  $\libfunc{(derived~functions)}$
 
 \end{frame}
 
@@ -198,9 +198,9 @@ data    E       =   ...
     \end{spec}
     \begin{itemize}
         \item |Embed| may only occur in pattern types
-        \item Used for embedding terms which don't bind any names %TODO WHAT?
-        \nt{a term type within |Embed| may contain pattern types (lhs of |Bind|), which may again contain
-        |Embed|ded types.}
+        \item ``escape hatch'' for embedding terms which don't bind any names
+        \nt{a term type within |Embed| may contain pattern types (inside lhs of |Bind|), which may again contain
+        |Embed|ded term types.}
         \nt{Note that we have a list of pairs, this is to prevent nonsensical (mismatched) lengths}
     \end{itemize}
 \end{frame}
@@ -257,7 +257,7 @@ data E  =   ...
 \begin{frame}{Representation}
     \begin{itemize}
         \item Locally nameless
-        \item Old idea
+        \item Old idea (70s)
         \item Bound variables represented by de Bruijn indices
         \item Free variables by atoms \nt{ atoms can be any countably infinite set with decidable equality, not just strings}
     \end{itemize}
@@ -309,7 +309,7 @@ data E  =   ...
         \end{spec}
     \end{block}
     \nt{|close| replaces free variables which match a pattern-bound variable, with bound variables at the given level}
-    \nt{|open| does the opposite, replaces bound variables (of the form |j@k|) with references to their binders in a pattern}
+    \nt{|open| does the opposite, replaces bound variables (of the form |j@k|) with free variables referencing their binders in a pattern}
     \nt{|open| allows recursing under a binder}
     \nt{|nth| and |find| are useful for converting between numeric indices and names}
 \end{frame}
@@ -329,10 +329,12 @@ unbind    (Bind p t)   = (p', open p' t)
 \begin{spec}
 unrebind    (Rebind p1 p2)  =   (p1, openP p1 p2)
 unrec       (Rec p)         =   openP p p
-\end{spec}\nt{note that we mustn't re-freshen rebound things. why?}
+\end{spec}
+\nt{|openP| looks through patterns to find |Embed| terms which can be opened}
+\nt{note that we mustn't re-freshen rebound things. why?}
 \nt{when opening a bind, we must freshen it's variables}
-\nt{but when opening a nested binding, fresh names have already been chosen, and some correspondence may exist between the outer bind and the variables inside the Rebind. this mustn't be broken. } %TODO: example.
-%TODO: talk about open/openP
+\nt{but when opening a nested binding, fresh names have already been chosen, and some correspondence may exist between the outer bind and the variables inside the Rebind. this mustn't be broken. }
+%TODO: example.
 \end{block}
 \end{frame}
 
@@ -349,8 +351,8 @@ unrec       (Rec p)         =   openP p p
     \begin{itemize}
         \item Not all terms are good representations
         \item Only \alert{locally closed} terms and patterns can be constructed
-            \pause
         \item i.e. no dangling bound variables (@0@@0@)
+            \pause
         \item Theorem: Constructors and destructors preserve LC
         \item Theorem: Substitution preserves LC
         \item Theorem: Freshening preserves LC
@@ -360,8 +362,8 @@ unrec       (Rec p)         =   openP p p
 \begin{frame}{$\alpha$-equivalence}
     \begin{itemize}
         \item Theorem: $-\approx-$ is an equivalence relation (\emph{refl}, \emph{sym}, \emph{trans})
-        \item Theorem: |fv| respects $\alpha$-equivalence ($t_1\approx t_2 \Rightarrow fv t_1 \approx fv t_2$)
-        \item Theorem: Substitution respects $\alpha$-equivalence
+        \item Theorem: |fv| respects $\alpha$-equivalence ($t_1\approx t_2 \Rightarrow fv~t_1 = fv~t_2$)
+        \item Theorem: Substitution respects $\alpha$-equivalence\nt{given $\alpha$-equiv terms and substitutions, applying them yields $\alpha$-equiv terms}
     \end{itemize}
     
 \end{frame}
@@ -404,7 +406,8 @@ class Monad m => Fresh m where
     fresh   :: Name a -> m (Name a)
 class Subst b a where
     isVar   :: a -> Maybe (SubstName a b)
-\end{spec}\nt{EG: 
+\end{spec}
+    \end{block}\nt{EG: 
     \begin{spec}
     instance Alpha SourcePos where
         aeq _ _ _ = True
@@ -412,9 +415,8 @@ class Subst b a where
 \nt{mode = pattern or term, different from semantics, they're not differentiated syntactically}
 \nt{default impl @FreshM@ exists, which just gives variables a number}
 \nt{Subst example: see code}
-    \end{block}
     \pause
-    Demo time.
+    \alert{Demo}
 \end{frame}
 
 
@@ -437,7 +439,7 @@ class Subst b a where
     \end{itemize}
 \end{frame}
 
-\section{Conclusion} % / contribution
+\section{Conclusion}
 
 
 \begin{frame}{Conclusion}

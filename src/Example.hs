@@ -1,13 +1,15 @@
-{-# LANGUAGE TemplateHaskell        #-}
-{-# LANGUAGE MultiParamTypeClasses  #-}
-{-# LANGUAGE FlexibleInstances      #-}
-{-# LANGUAGE FlexibleContexts       #-}
-{-# LANGUAGE UndecidableInstances   #-}
+{-# LANGUAGE TemplateHaskell            #-}
+{-# LANGUAGE MultiParamTypeClasses      #-}
+{-# LANGUAGE FlexibleInstances          #-}
+{-# LANGUAGE FlexibleContexts           #-}
+{-# LANGUAGE UndecidableInstances       #-}
+{-# LANGUAGE NoMonomorphismRestriction  #-}
 
 module Example where
 
 import Unbound.LocallyNameless hiding (Char, Int)
 import qualified Language.Haskell.Exts as E
+import qualified Language.Haskell.Exts.Pretty as P
 
 type N = Name Exp
 
@@ -23,11 +25,13 @@ instance Eq Exp where
 data Lit    = Int Prelude.Integer
             | Char Prelude.Char
             | String Prelude.String
-            | R Prelude.Float
             deriving (Show, Eq)
 
 $(derive [''Lit])
 instance Alpha Lit
+
+instance P.Pretty Exp where
+--    pretty (Lit x) = P.text "eyeahd"
 
 $(derive [''Exp])
 
@@ -58,17 +62,10 @@ toExp e                                   = error $ "toExp: Unsupported: " ++ sh
 
 parseExp = toExp . E.fromParseResult . E.parseExp
 
-example0 = parseExp "\\ x -> y"
-example1 = parseExp "(\\x -> x) y"
-
-captureAvoid :: (Subst b Exp, Fresh m) => Name b -> b -> Exp -> m Exp
-captureAvoid n s (Var x) = return (subst n s (Var x))
-captureAvoid n s (Lit x) = return (Lit x)
-captureAvoid n s (App x y) = undefined
-captureAvoid n s (Lam b) = do
-                        (x, e) <- unbind b
-                        e' <- captureAvoid n s e
-                        return (Lam (bind x e'))
+example0 = parseExp "\\ x -> \\ y -> x"
+example01= parseExp "\\ x -> \\ y -> y"
+example1 = parseExp "\\ x -> x"
+example2 = parseExp "(\\x -> x) y"
 
 red :: Fresh m => Exp -> m Exp
 red (Var x) = return (Var x)
@@ -88,3 +85,25 @@ red (App e1 e2) = do
         _ -> do
             e2' <- red e2
             return (App e1' e2')
+
+
+fromLit (Int i)     = E.Int i
+fromLit (Char c)    = E.Char c
+fromLit (String s)  = E.String s
+
+unbindLam = unbind
+noSrcLoc = E.SrcLoc "" 0 0
+
+fromExp :: (Fresh m) => Exp -> m String
+fromExp (Lit i)     = return (show i)
+fromExp (Var n)     = return (name2String n)
+fromExp (Lam b)     = do (n,e) <- unbindLam b
+                         return (show (Lam (bind n e)))
+fromExp (App e1 e2) = do e1' <- fromExp e1
+                         e2' <- fromExp e2
+                         return $ show $ App e1 e2
+
+
+{-prettyOneLine =-}
+  {-E.prettyPrintStyleMode (E.style { E.mode = E.OneLineMode }) E.defaultMode-}
+{-prettyExp = prettyOneLine . runFreshM . fromExp-}

@@ -43,9 +43,6 @@
     \maketitle
 \end{frame}
 
-%TODO: question-> talk about process of refining eg let* or just give final definition?
-
-
 \begin{frame}
     \tableofcontents
 \end{frame}

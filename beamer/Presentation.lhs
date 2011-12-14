@@ -95,7 +95,6 @@
     \nt{Using concrete examples we'll motivate the available combinators}
     \nt{\unbound introduces type combinators which encode binding structure in the algebraic datatype itself}
     \nt{won't talk much about implementation and formal semantics of \unbound, more a tutorial}
-    %TODO explain role of Name / Bind
 \end{frame}
 \begin{frame}{\unbound contribution}
     \begin{itemize}
@@ -128,20 +127,22 @@ red (Lam b) = do
       App e'' (Var y) | x == y && not (x `elem` fv e'') -> return e''
       _                -> return (Lam (bind x e'))
   \end{spec}
-
+  \nt{$\eta: \lambda x . e x = e$}
+  \nt{$\beta: (\lambda x . e) t = e [ x \mapsto t]$}
+  \nt{avoiding capture! intuitively easy!}
   \end{frame}
   \begin{frame}{Continuing with the $App$-case}
       \begin{spec}
 red (App e1 e2) = do
-    e1' <- red e1
-    case e1' of
+    e1p <- red e1
+    case e1p of
         Lam b -> do -- beta-rule
             (x, e') <- unbind b
-            e2' <- red e2
-            return (subst x e2' e')
+            e2p <- red e2
+            return (subst x e2p e')
         _ -> do
-            e2' <- red e2
-            return (App e1' e2')
+            e2p <- red e2
+            return (App e1p e2p)
   \end{spec}
   $\libfunc{Derived~functions}$
 
@@ -163,13 +164,11 @@ red (App e1 e2) = do
         \item[|Rec P|] Recursive binding pattern
     \end{description}
     \nt{\unbound uses 2 sorts of types:}
-    \nt{patterns: names are binding occurences}
     \nt{terms: names are references to binding sites}
+    \nt{patterns: names are binding occurences}
     \nt{regular = unit, base types, sums, products, lfp's}
     \nt{$\mathds{P}$ determines expressiveness: we'll explain Embed, Rebind, Rec later}
 \end{frame}
-
-\section{Feature: Binding patterns}
 
 \begin{frame}
     \begin{itemize}
@@ -182,11 +181,12 @@ red (App e1 e2) = do
 >           |   App E E
 \nt{$Bind$ takes pattern type, term type, returns term type.}
 Another example, adding |case| with pattern-matching:
+\pause
 \begin{spec}
 data    Pat     =   PVar N | PCon String [Pat]
 data    E       =   ...
                 |   Con String [E]      -- data constructors
-                |   Case E [Bind P E]   -- pattern matching
+                |   Case E [Bind Pat E]   -- pattern matching
 \end{spec}
 \end{frame}
 
@@ -198,7 +198,7 @@ data    E       =   ...
     \end{spec}
     \begin{itemize}
         \item |Embed| may only occur in pattern types
-        \item Used for embedding terms which don't bind any names
+        \item Used for embedding terms which don't bind any names %TODO WHAT?
         \nt{a term type within |Embed| may contain pattern types (lhs of |Bind|), which may again contain
         |Embed|ded types.}
         \nt{Note that we have a list of pairs, this is to prevent nonsensical (mismatched) lengths}
@@ -220,6 +220,9 @@ Bind (Rebind N1 (N2, Embed E1)) E2
     \begin{spec}
 data Lets   =   Nil
             |   Cons (Rebind (N, Embed E) Lets)
+            \end{spec}
+            \ppause
+            \begin{spec}
 data E      =   ...
             |   LetStar (Bind Lets E)
     \end{spec}
@@ -242,8 +245,6 @@ data E  =   ...
 \end{frame}
 
 \section{Semantics}
-
-%TODO: summarise semantics
 
 \begin{frame}{Semantics}
     \begin{itemize}
@@ -271,20 +272,26 @@ data E  =   ...
     \end{itemize}
     \begin{example}
         |Bind (bx, by, bz) (Bind bq 1@2)|
-    \end{example}\nt{so |1@2| refers to |bq| since we count from 0}
+    \end{example}\nt{so |1@2| refers to |bz| since we count from 0}
     \nt{|nth| and |find| exist for looking up name resp. index given pattern and number resp name.}
 \end{frame}
 
 \newcommand{\iss}{ ::=& }
 
 \begin{frame}{Syntax}
+    Syntax of atoms, indices, terms and patterns (for representing terms with binding structure)
     \begin{align*}
         \mathds{A} \iss \left\{ \textnormal{x,y,z},\cdots \right\}  \\
         b \iss\; j@@k  \\
         t \iss\; \textnormal{x}\; ||\; b\; ||\; \textnormal{K}~t_1 \ldots t_n\; ||\; \textnormal{Bind}~p~t  \\
         p \iss\; -_x\; ||\; \textnormal{K}~p_1 \ldots p_n  \; ||\; \textnormal{Rebind}~p~p\; ||\; \textnormal{Embed}~t \;||\; \textnormal{Rec}~p
     \end{align*}
-    %TODO: explain this like top of pg 5 (red)
+    \nt{We separate terms and patterns}
+    \nt{names in terms can be free or bound}
+    \nt{K = constructor constants applied to 0\ldots $n$ subterms}
+    \nt{K also handles generic/regular types}
+    \nt{patterns can be constructors applied to subpatterns}
+    \nt{$-_x$ are binders, emphasizing placeholder-ness}
 \end{frame}
 
 
@@ -293,7 +300,7 @@ data E  =   ...
     \begin{itemize}
         \item |bind| and |unbind| are implemented in terms of:
             \pause
-        \item |close| and |open|, important operations
+        \item |close| and |open|, important operations for locally nameless representation
     \end{itemize}
     \begin{block}{Helpers}
         \begin{spec}
@@ -302,7 +309,7 @@ data E  =   ...
         \end{spec}
     \end{block}
     \nt{|close| replaces free variables which match a pattern-bound variable, with bound variables at the given level}
-    \nt{|open| does the opposite, replaces bound variables (of the form |j@k|) with references to their binders in a the pattern}
+    \nt{|open| does the opposite, replaces bound variables (of the form |j@k|) with references to their binders in a pattern}
     \nt{|open| allows recursing under a binder}
     \nt{|nth| and |find| are useful for converting between numeric indices and names}
 \end{frame}
@@ -361,7 +368,7 @@ unrec       (Rec p)         =   openP p p
 
 
 \begin{frame}{Interaction $\alpha$-equivalence with |bind|}
-    Two bindings are $\alpha$-equivalent if we can freshen two patterns to the same new result, and then show that their bodies are $\alpha$-equivalent under a consistent renaming. %TODO this -> \nt?
+    Two bindings are $\alpha$-equivalent if we can freshen two patterns to the same new result, and then show that their bodies are $\alpha$-equivalent under a consistent renaming.
     \begin{block}{Theorem 7}
         If |freshen p1 -> p, pi1| and |freshen p2 -> p, pi2|\\ and $\pi_1 \cdot t_1 \approx \pi_2 \cdot t_2$\\ then |bind p1 t1| $\approx$ |bind p2 t2|.
     \end{block}
@@ -381,7 +388,7 @@ unrec       (Rec p)         =   openP p p
     \end{block}
 \end{frame}
 
-\section{Implementation} % TODO very little here / DEMO
+\section{Implementation}
 
 \begin{frame}{About the implementation}
     \begin{itemize}
@@ -416,8 +423,8 @@ class Subst b a where
     \begin{itemize}
         \item Many approaches possible (nominal)\nt{locally nameless turns out to be simpler. nominal impl is being worked on.}
         \item In practise \unbound is effective
-        \item Being used in {\rmfamily \sc Trellys}\nt{experimental dependently-typed language, for type checking and evaluation}
-        \item ``Just works'', but performance is an issue\nt{performance: generic functions, also in freshness monad some terms will be opened and closed for each binding level; expensive. on the other hand, $\alpha$-equiv is cheaper than nominal impl.}
+        \item Being used in {\rmfamily \scshape Trellys}\nt{experimental dependently-typed language, for type checking and evaluation}
+        \item ``Just works'', but performance is an issue\nt{performance: generic functions, also in freshness monad some terms will be opened and closed for each binding level; expensive. on the other hand, $\alpha$-equiv is cheaper than a nominal impl.}
         \item Much related work, old idea (see references)
     \end{itemize}
 \end{frame}
